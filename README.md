@@ -81,6 +81,8 @@ python scripts/package.py
 
 仓库提供手动触发的 [浏览器测试工作流](https://github.com/Yangxixi2023/ai-wide-reader/actions)，不设置分支发布门禁。本机 Windows 的独立下载版 Chromium 遇到程序集启动问题，此轮自动化在 GitHub Linux 环境执行。可通过 `AWR_BROWSER_PATH` 明确指定其他测试浏览器。
 
+v1.0.1 的 3 组浏览器测试全部通过，包含“网页中不新增界面元素”的验证：[测试记录](https://github.com/Yangxixi2023/ai-wide-reader/actions/runs/38273219224)。
+
 截至 2026-10-12，已检查 ChatGPT 当前线程宽度变量与 Gemini 普通对话的实际 DOM。自动化验证使用与这些结构对应的本地样本；不代表所有账号灰度版本均已实测。网站更新后可能需要调整 `extension/layout.css` 中的站点适配规则。
 
 ### 文件结构
