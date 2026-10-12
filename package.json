@@ -1,6 +1,6 @@
 {
   "name": "ai-wide-reader",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "description": "A local-only width control extension for ChatGPT and Gemini",
   "scripts": {

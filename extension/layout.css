@@ -39,4 +39,3 @@ html[data-awr-site="gemini"][data-awr-composer] chat-window .input-area-containe
   width: min(100%, var(--awr-width)) !important;
   max-width: min(100%, var(--awr-width)) !important;
 }
-@media print { #ai-wide-reader { display: none !important; } }

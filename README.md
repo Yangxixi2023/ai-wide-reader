@@ -2,17 +2,15 @@
 
 让对话用上你的大屏。实时调整正文宽度，阅读长文、代码、表格和公式时少一点空白、多一点空间。
 
-**[下载最新安装包](https://github.com/Yangxixi2023/ai-wide-reader/releases/latest/download/ai-wide-reader-v1.0.0.zip)** · **[全部版本](https://github.com/Yangxixi2023/ai-wide-reader/releases)** · MIT 开源
+**[下载最新安装包](https://github.com/Yangxixi2023/ai-wide-reader/releases/latest/download/ai-wide-reader-v1.0.1.zip)** · **[全部版本](https://github.com/Yangxixi2023/ai-wide-reader/releases)** · MIT 开源
 
 适用于桌面版 **Microsoft Edge / Google Chrome**。这是独立的 Manifest V3 浏览器扩展，安装无需编译、API Key、油猴或脚本猫。目前通过 GitHub 安装，尚未上架浏览器扩展商店。
 
-![页面快捷设置](docs/images/controls.png)
-
-> 图片使用本地模拟对话展示实际扩展效果，不包含个人聊天记录。
+只修改网站对话区域的宽度。通过浏览器工具栏按钮调整，页面内不添加悬浮按钮或设置面板。
 
 ## 安装
 
-1. [下载 ZIP](https://github.com/Yangxixi2023/ai-wide-reader/releases/latest/download/ai-wide-reader-v1.0.0.zip)，**完整解压到一个固定文件夹**，例如 `D:\Extensions\ai-wide-reader`。
+1. [下载 ZIP](https://github.com/Yangxixi2023/ai-wide-reader/releases/latest/download/ai-wide-reader-v1.0.1.zip)，**完整解压到一个固定文件夹**，例如 `D:\Extensions\ai-wide-reader`。
 2. 在浏览器地址栏输入扩展管理地址并回车：
    - Edge：`edge://extensions`
    - Chrome：`chrome://extensions`
@@ -20,7 +18,7 @@
 4. 点击 **加载解压缩的扩展**（Chrome 为“加载已解压的扩展程序”），选择刚刚解压的文件夹。
    - 选择的这一层应当直接包含 `manifest.json`、`content.js` 和 `icons` 文件夹。
    - 不要选择 ZIP 文件，也不要双击 `manifest.json`。
-5. 刷新已打开的 [ChatGPT](https://chatgpt.com/) 或 [Gemini](https://gemini.google.com/app)。右下角出现 **↔ 85%**，安装完成。
+5. 刷新已打开的 [ChatGPT](https://chatgpt.com/) 或 [Gemini](https://gemini.google.com/app)。点击浏览器工具栏的扩展图标即可调宽。
 6. 打开浏览器右上角的“扩展”菜单，把 **宽屏阅读 · ChatGPT & Gemini** 固定到工具栏，方便随时管理设置。
 
 **安装目录请保留。** 加载解压缩扩展后，浏览器直接使用这个文件夹；移动或删除它会导致扩展失效。无需关闭浏览器原有安全保护，也无需启用用户脚本权限。
@@ -31,27 +29,14 @@
 
 ## 使用
 
-- **即时调节**：点击页面右下角的 `↔ 85%`，拖动滑块，或输入 35–100 的整数。
+- **即时调节**：点击浏览器工具栏的扩展图标，拖动滑块，或输入 35–100 的整数。
 - **常用预设**：舒适 65%、宽屏 85%、铺满 100%。点击预设会同时启用宽屏。
-- **分别保存**：ChatGPT 和 Gemini 各自保存宽度、启用状态和其他选项；同一浏览器配置中的已打开标签页同步更新。
+- **分别保存**：ChatGPT 和 Gemini 各自保存宽度、启用状态和输入框选项；同一浏览器配置中的已打开标签页同步更新。
 - **输入框跟随宽度**：可选，默认关闭；开启后输入框也会拉宽。
-- **隐藏页面按钮**：取消“显示页面快捷按钮”。之后可以通过工具栏扩展按钮重新显示。
 - **恢复网站原宽度**：停止应用扩展的布局样式，保留上次宽度。再次勾选“启用”即可恢复。
-- **重置设置**：只重置所选网站，恢复 85%、启用宽屏、显示按钮、输入框不跟随。
-- **键盘操作**：滑块支持方向键、Home / End；页面设置面板按 Esc 关闭。
+- **重置设置**：只重置所选网站，恢复 85%、启用宽屏、输入框不跟随。
 
 百分比按**侧栏之外的可用对话区域**计算。展开侧栏、调整浏览器窗口或缩放页面时自动重新计算；100% 会保留少量两侧留白，避免内容贴住边缘。不同网站自身的正文内边距会使实际文字区域略小。扩展保留原网站字号、主题与代码滚动行为。
-
-| 原始宽度 | 宽屏 85% |
-| --- | --- |
-| ![原始宽度](docs/images/original.png) | ![宽屏效果](docs/images/wide.png) |
-
-<details>
-<summary>工具栏设置界面</summary>
-
-![两个网站独立设置](docs/images/settings.png)
-
-</details>
 
 ## 更新与卸载
 
@@ -73,7 +58,7 @@
 
 **加载失败，提示找不到清单文件？** 选择包含 `manifest.json` 的文件夹。安装 Release ZIP 时它在解压目录的第一层；安装源码时它在 `extension` 子目录。
 
-**已经安装，却看不到页面按钮？** 刷新页面；确认扩展已启用、站点访问没有被浏览器禁止，并在工具栏设置里勾选“显示页面快捷按钮”。受组织管理的浏览器可能不允许加载解压缩扩展。
+**如何找到设置？** 在浏览器“扩展”菜单里固定“宽屏阅读”，点击工具栏上的扩展图标。确认扩展已启用、站点访问没有被浏览器禁止。受组织管理的浏览器可能不允许加载解压缩扩展。
 
 **滑块变化，网页没有变化？** 确认当前网站“启用”已勾选。其他修改布局的扩展可能与本扩展冲突，可暂时停用它们进行对比。若网站刚刚更新布局，请提交 Issue，注明网站、浏览器版本、页面模式和复现步骤。
 
@@ -92,9 +77,9 @@ npm test
 python scripts/package.py
 ```
 
-测试在独立临时浏览器配置中加载真正的 MV3 扩展，拦截两个站点的地址并返回本地布局样本；不登录用户账号，不向模型发送消息。覆盖宽度端点与预设、独立设置、输入框开关、恢复原宽、重新加载持久化、页面容器替换、流式内容追加、侧栏变化、窄窗口、长代码滚动、键盘操作和跨标签更新。自动截图也来自这些样本。
+测试在独立临时浏览器配置中加载真正的 MV3 扩展，拦截两个站点的地址并返回本地布局样本；不登录用户账号，不向模型发送消息。覆盖宽度端点与预设、独立设置、输入框开关、恢复原宽、重新加载持久化、页面容器替换、流式内容追加、侧栏变化、窄窗口、长代码滚动、键盘操作、跨标签更新，以及不向网页添加界面元素。
 
-v1.0.0 在 GitHub Linux / Chromium 环境的 **3 组测试全部通过**：[查看测试记录](https://github.com/Yangxixi2023/ai-wide-reader/actions/runs/38267946281)。仓库提供手动触发的测试工作流，不设置分支发布门禁。本机 Windows 的独立下载版 Chromium 遇到程序集启动问题，因此此轮实际扩展加载与截图在 Linux 环境完成；Windows 上的浏览器安装仍按上面的 Edge / Chrome 步骤操作。若使用其他测试浏览器，可通过 `AWR_BROWSER_PATH` 明确指定可执行文件。
+仓库提供手动触发的 [浏览器测试工作流](https://github.com/Yangxixi2023/ai-wide-reader/actions)，不设置分支发布门禁。本机 Windows 的独立下载版 Chromium 遇到程序集启动问题，此轮自动化在 GitHub Linux 环境执行。可通过 `AWR_BROWSER_PATH` 明确指定其他测试浏览器。
 
 截至 2026-10-12，已检查 ChatGPT 当前线程宽度变量与 Gemini 普通对话的实际 DOM。自动化验证使用与这些结构对应的本地样本；不代表所有账号灰度版本均已实测。网站更新后可能需要调整 `extension/layout.css` 中的站点适配规则。
 
@@ -106,9 +91,9 @@ extension/
   settings.js     站点与默认配置
   panel.js        两处共用的控件及设置保存
   popup.*         工具栏设置页
-  content.js      页面快捷面板与区域测量
+  content.js      对话区域测量与设置应用
   layout.css      两个网站的布局适配
-  panel.css       扩展控件样式（页面内使用 Shadow DOM）
+  panel.css       工具栏设置页样式
 tests/            MV3 实际加载与渲染测试
 scripts/package.py
 ```

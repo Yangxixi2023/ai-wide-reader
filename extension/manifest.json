@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "宽屏阅读 · ChatGPT & Gemini",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "实时调整 ChatGPT 和 Gemini 对话宽度，分别保存设置，让大屏更适合阅读代码、公式与长文。",
   "permissions": ["storage"],
   "action": { "default_popup": "popup.html", "default_title": "宽屏阅读设置", "default_icon": { "16": "icons/16.png", "32": "icons/32.png" } },
@@ -9,12 +9,8 @@
   "options_ui": { "page": "popup.html", "open_in_tab": true },
   "content_scripts": [{
     "matches": ["https://chatgpt.com/*", "https://chat.openai.com/*", "https://gemini.google.com/*"],
-    "js": ["settings.js", "panel.js", "content.js"],
+    "js": ["settings.js", "content.js"],
     "css": ["layout.css"],
     "run_at": "document_idle"
-  }],
-  "web_accessible_resources": [{
-    "resources": ["panel.css"],
-    "matches": ["https://chatgpt.com/*", "https://chat.openai.com/*", "https://gemini.google.com/*"]
   }]
 }

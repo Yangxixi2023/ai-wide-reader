@@ -1,7 +1,7 @@
 const { test, before, after } = require('node:test');
 const assert = require('node:assert/strict');
 const { chromium } = require('playwright');
-const { mkdtemp, rm, mkdir } = require('node:fs/promises');
+const { mkdtemp, rm } = require('node:fs/promises');
 const { tmpdir } = require('node:os');
 const path = require('node:path');
 
@@ -29,7 +29,6 @@ async function open(site, legacy = false) {
   const url = site === 'chatgpt' ? 'https://chatgpt.com/c/fixture' : 'https://gemini.google.com/app/fixture';
   await page.route(url, route => route.fulfill({ contentType: 'text/html', body: fixture(site, legacy) }));
   await page.goto(url);
-  await page.locator('#ai-wide-reader .awr-pill').waitFor();
   await page.waitForFunction(() => document.documentElement.style.getPropertyValue('--awr-width'));
   await settle(page);
   return page;
@@ -59,8 +58,8 @@ test('real MV3 extension: width, independent settings, composer, restore and per
   for (const percent of [35, 65, 85, 100]) {
     await set('chatgpt', { width: percent });
     await set('gemini', { width: percent });
-    await chat.waitForFunction(p => document.querySelector('#ai-wide-reader').shadowRoot.querySelector('.width-slider').value === String(p), percent);
-    await gemini.waitForFunction(p => document.querySelector('#ai-wide-reader').shadowRoot.querySelector('.width-slider').value === String(p), percent);
+    await chat.waitForFunction(p => Math.abs(parseFloat(document.documentElement.style.getPropertyValue('--awr-width')) - Math.min(1360 * p / 100, 1336)) < 2, percent);
+    await gemini.waitForFunction(p => Math.abs(parseFloat(document.documentElement.style.getPropertyValue('--awr-width')) - Math.min(1360 * p / 100, 1336)) < 2, percent);
     await settle(chat); await settle(gemini);
     const column = Math.min(1360 * percent / 100, 1336);
     within(await width(chat, chatSelector), column - 40);
@@ -82,15 +81,13 @@ test('real MV3 extension: width, independent settings, composer, restore and per
   await settle(chat);
   within(await width(chat, 'form'), 1116);
   within(await width(gemini, gemSelector), 884);
-  await set('gemini', { enabled: false, floating: false });
+  await set('gemini', { enabled: false });
   await gemini.waitForFunction(() => !document.documentElement.hasAttribute('data-awr-site'));
   within(await width(gemini, gemSelector), 708);
-  assert.equal(await gemini.locator('#ai-wide-reader').isVisible(), false);
   await gemini.reload();
-  await gemini.locator('#ai-wide-reader').waitFor({ state: 'attached' });
-  assert.equal(await gemini.locator('#ai-wide-reader').isVisible(), false);
+  await gemini.waitForFunction(() => window.AWR === undefined);
   within(await width(gemini, gemSelector), 708);
-  await set('gemini', { enabled: true, floating: true });
+  await set('gemini', { enabled: true });
   await gemini.waitForFunction(() => document.documentElement.hasAttribute('data-awr-site'));
   await settle(gemini);
   within(await width(gemini, gemSelector), 884);
@@ -121,34 +118,19 @@ test('SPA replacement, streaming additions, sidebar changes and small viewports'
   await page.close();
 });
 
-test('UI controls, keyboard access, cross-tab updates and publishable screenshots', async () => {
-  await set('gemini', { width: 85, enabled: true, floating: true, composer: false });
+test('toolbar slider, keyboard access, restore and no added page UI', async () => {
+  await set('gemini', { width: 85, enabled: true, composer: false });
   const page = await open('gemini');
-  const pill = page.locator('#ai-wide-reader .awr-pill');
-  await pill.click();
-  await page.locator('#ai-wide-reader .width-slider').press('Home');
-  await page.waitForFunction(() => document.querySelector('#ai-wide-reader').shadowRoot.querySelector('.width-number').value === '35');
+  const controls = popup.locator('.site-panel').nth(1);
+  await controls.locator('.width-slider').press('Home');
   await popup.waitForFunction(() => document.querySelectorAll('.width-number')[1].value === '35');
-  await page.getByRole('button', { name: '宽屏 85%' }).click();
-  await page.locator('#ai-wide-reader .width-slider').press('Escape');
-  assert.equal(await pill.getAttribute('aria-expanded'), 'false');
-  await page.getByRole('button', { name: '调整对话宽度', exact: true }).click();
-  await page.getByRole('button', { name: '恢复网站原宽度' }).click();
+  await page.waitForFunction(() => Math.abs(parseFloat(document.documentElement.style.getPropertyValue('--awr-width')) - 476) < 2);
+  await controls.getByRole('button', { name: '宽屏 85%' }).click();
+  await controls.getByRole('button', { name: '恢复网站原宽度' }).click();
   await page.waitForFunction(() => !document.documentElement.hasAttribute('data-awr-site'));
-  await page.getByRole('button', { name: '重置设置', exact: true }).click();
+  await controls.getByRole('button', { name: '重置设置', exact: true }).click();
   await page.waitForFunction(() => document.documentElement.hasAttribute('data-awr-site'));
-  await page.getByRole('button', { name: '关闭设置', exact: true }).click();
-  await mkdir(path.resolve(__dirname, '../docs/images'), { recursive: true });
-  await set('gemini', { enabled: false });
-  await page.waitForFunction(() => !document.documentElement.hasAttribute('data-awr-site'));
-  await page.screenshot({ path: path.resolve(__dirname, '../docs/images/original.png') });
-  await set('gemini', { enabled: true });
-  await page.waitForFunction(() => document.documentElement.hasAttribute('data-awr-site'));
-  await settle(page);
-  await page.screenshot({ path: path.resolve(__dirname, '../docs/images/wide.png') });
-  await page.getByRole('button', { name: '调整对话宽度', exact: true }).click();
-  await page.screenshot({ path: path.resolve(__dirname, '../docs/images/controls.png') });
-  await popup.setViewportSize({ width: 380, height: 960 });
-  await popup.screenshot({ path: path.resolve(__dirname, '../docs/images/settings.png') });
+  assert.deepEqual(await page.evaluate(() => [...document.body.children].map(e => e.tagName)), ['ASIDE', 'MAIN']);
+  assert.equal(await page.locator('#ai-wide-reader').count(), 0);
   await page.close();
 });

@@ -1,6 +1,6 @@
 (() => {
-  const { sites, defaults, key, read, minWidth, maxWidth } = window.AWR;
-  function createPanel(site, onChange) {
+  const { sites, defaults, key, watch, minWidth, maxWidth } = window.AWR;
+  function createPanel(site) {
     const element = document.createElement('section');
     element.className = 'site-panel';
     element.innerHTML = `
@@ -10,7 +10,6 @@
       <div class="scale"><span>${minWidth}%</span><span>占可用对话区域</span><span>${maxWidth}%</span></div>
       <div class="presets"><button type="button" data-width="65">舒适 65%</button><button type="button" data-width="85">宽屏 85%</button><button type="button" data-width="100">铺满 100%</button></div>
       <label class="option"><input type="checkbox" data-field="composer">输入框跟随宽度</label>
-      <label class="option"><input type="checkbox" data-field="floating">显示页面快捷按钮</label>
       <footer><button type="button" class="restore">恢复网站原宽度</button><button type="button" class="reset">重置设置</button></footer>
       <p class="save-status" role="status" aria-live="polite"></p>`;
     element.querySelector('h2').textContent = sites[site].name;
@@ -29,7 +28,6 @@
     }
     async function update(patch) {
       render({ ...state, ...patch });
-      onChange?.(state);
       try {
         await chrome.storage.local.set(Object.fromEntries(Object.entries(patch).map(([field, value]) => [key(site, field), value])));
         status.textContent = '已保存到本机';
@@ -47,18 +45,8 @@
     for (const button of element.querySelectorAll('[data-width]')) button.addEventListener('click', () => update({ width: Number(button.dataset.width), enabled: true }));
     element.querySelector('.restore').addEventListener('click', () => update({ enabled: false }));
     element.querySelector('.reset').addEventListener('click', () => update({ ...defaults }));
-    const listener = (changes, area) => {
-      if (area !== 'local') return;
-      const patch = {};
-      for (const field of Object.keys(defaults)) {
-        const change = changes[key(site, field)];
-        if (change) patch[field] = change.newValue ?? defaults[field];
-      }
-      if (Object.keys(patch).length) { render({ ...state, ...patch }); onChange?.(state); }
-    };
-    chrome.storage.onChanged.addListener(listener);
     render(state);
-    const ready = chrome.storage.local.get(null).then(values => { render(read(site, values)); onChange?.(state); });
+    const ready = watch(site, render);
     return { element, ready };
   }
   window.AWR.createPanel = createPanel;
