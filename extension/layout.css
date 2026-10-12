@@ -1,0 +1,42 @@
+/* ChatGPT: semantic attributes and width tokens, not generated class hashes. */
+html[data-awr-site="chatgpt"] main :is(
+  [data-thread-user-message-navigation-content],
+  [class*="--thread-content-max-width"]:not(:has(form)),
+  [data-testid^="conversation-turn-"] > div > div[class*="max-w-"]
+) {
+  --thread-content-max-width: var(--awr-width) !important;
+  --thread-content-responsive-max-width: var(--awr-width) !important;
+  --thread-body-max-width: var(--awr-width) !important;
+  max-width: min(100%, var(--awr-width)) !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  margin-inline: auto !important;
+}
+html[data-awr-site="chatgpt"][data-awr-composer] main [class*="--thread-body-max-width"]:has(form) {
+  --thread-content-max-width: var(--awr-width) !important;
+  --thread-content-responsive-max-width: var(--awr-width) !important;
+  --thread-body-max-width: var(--awr-width) !important;
+  max-width: min(100%, var(--awr-width)) !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+/* Gemini legacy layout: the conversation wrapper owns the reading column. */
+html[data-awr-site="gemini"] chat-window .conversation-container {
+  max-width: none !important;
+  width: 100% !important;
+}
+/* Gemini luminous layout: individual Markdown blocks own the reading column. */
+html[data-awr-site="gemini"] chat-window :is(user-query, .markdown-main-panel > *, .response-footer) {
+  max-width: min(100%, var(--awr-width)) !important;
+  width: min(100%, var(--awr-width)) !important;
+  margin-inline: auto !important;
+  box-sizing: border-box !important;
+}
+html[data-awr-site="gemini"] chat-window .markdown-main-panel :is(p, h1, h2, h3, h4, h5, h6, ul, ol, blockquote) {
+  max-width: var(--awr-width) !important;
+}
+html[data-awr-site="gemini"][data-awr-composer] chat-window .input-area-container {
+  width: min(100%, var(--awr-width)) !important;
+  max-width: min(100%, var(--awr-width)) !important;
+}
+@media print { #ai-wide-reader { display: none !important; } }
