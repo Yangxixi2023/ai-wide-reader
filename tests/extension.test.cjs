@@ -66,7 +66,7 @@ test('real MV3 extension: width, independent settings, composer, restore and per
     await set('chatgpt', { width: percent });
     await set('gemini', { width: percent });
     const column = 1360 * percent / 100;
-    await waitForWidth(chat, chatSelector, column - 40);
+    await waitForWidth(chat, chatSelector, Math.max(768, column) - 40);
     await waitForWidth(gemini, gemSelector, Math.min(column, 1336));
     for (const page of [chat, gemini]) {
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
@@ -101,7 +101,7 @@ test('real MV3 extension: width, independent settings, composer, restore and per
 
 test('ChatGPT keeps the visible thread wide beside a hidden or narrow main panel', async () => {
   await set('chatgpt', { width: 85, enabled: true });
-  const page = await open('chatgpt', { beforeMain: '<main id="inactive-pane" hidden style="position:absolute;width:48px"></main>' });
+  const page = await open('chatgpt', { beforeMain: '<main id="inactive-pane" hidden style="position:absolute;width:48px"><div class="thread-scroll-container"></div></main>' });
   const thread = '[data-thread-user-message-navigation-content]';
   const available = '.thread-parent';
   for (const selector of [thread, `${thread} p`]) {
@@ -116,8 +116,7 @@ test('ChatGPT keeps the visible thread wide beside a hidden or narrow main panel
     replacement.style.marginRight = '280px';
     current.replaceWith(replacement);
   });
-  await settle(page);
-  within(await width(page, thread), (await width(page, available)) * .85);
+  await waitForWidth(page, thread, (await width(page, available)) * .85);
   within(await width(page, `${thread} p`), (await width(page, available)) * .85 - 40);
   await page.close();
 });
@@ -139,6 +138,15 @@ test('ChatGPT does not squeeze both the message and composer in a compact pane',
   await settle(page);
   const enabled = await Promise.all(columns.map(selector => width(page, selector)));
   assert.deepEqual(enabled, native, 'Wide Reader must preserve both native widths when there is no room to widen');
+
+  await set('chatgpt', { width: 85 });
+  await page.locator('.thread-scroll-container').evaluate(pane => { pane.style.inlineSize = ''; });
+  for (const column of columns) await waitForWidth(page, column, 1116);
+
+  await popup.locator('.site-panel').first().getByRole('button', { name: '恢复网站原宽度' }).click();
+  for (const column of columns) await waitForWidth(page, column, 728);
+  await page.reload();
+  for (const column of columns) await waitForWidth(page, column, 728);
   await page.close();
 });
 

@@ -7,7 +7,7 @@
       <header class="site-heading"><h2></h2><label class="switch"><input type="checkbox" data-field="enabled"><span>启用</span></label></header>
       <div class="width-heading"><label>对话宽度 <input class="width-number" type="number" min="${minWidth}" max="${maxWidth}" step="1" aria-label="对话宽度百分比"> %</label></div>
       <input class="width-slider" type="range" min="${minWidth}" max="${maxWidth}" step="1" aria-label="调整对话宽度">
-      <div class="scale"><span>${minWidth}%</span><span>占可用对话区域</span><span>${maxWidth}%</span></div>
+      <div class="scale"><span>${minWidth}%</span><span>${site === 'chatgpt' ? '目标占比 · 至少保留原宽' : '占可用对话区域'}</span><span>${maxWidth}%</span></div>
       <div class="presets"><button type="button" data-width="65">舒适 65%</button><button type="button" data-width="85">宽屏 85%</button><button type="button" data-width="100">铺满 100%</button></div>
       <label class="option"><input type="checkbox" data-field="composer">输入框跟随宽度</label>
       <footer><button type="button" class="restore">恢复网站原宽度</button><button type="button" class="reset">重置设置</button></footer>

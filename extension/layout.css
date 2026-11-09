@@ -1,8 +1,15 @@
-/* ChatGPT resolves the percentage against each native column's own containing block. */
-html[data-awr-site="chatgpt"] main [data-thread-user-message-navigation-content],
-html[data-awr-site="chatgpt"] main [data-testid^="conversation-turn-"] > div > [class~="max-w-(--thread-content-max-width)"]:not([data-thread-user-message-navigation-content] *),
-html[data-awr-site="chatgpt"][data-awr-composer] main [class~="max-w-(--thread-body-max-width)"]:has(form[data-chatgpt-composer]):not([data-thread-user-message-navigation-content] *) {
-  max-width: var(--awr-width) !important;
+/* Keep the native limits unless the scroll pane has room for a wider column. */
+html[data-awr-site="chatgpt"] [data-awr-chat-pane] {
+  --awr-chat-target-width: calc(var(--awr-chat-pane-width) * var(--awr-width));
+}
+html[data-awr-site="chatgpt"] [data-awr-chat-pane] [data-thread-user-message-navigation-content][class~="max-w-(--thread-body-max-width)"],
+html[data-awr-site="chatgpt"][data-awr-composer] [data-awr-chat-pane]
+  [class~="max-w-(--thread-body-max-width)"]:has(form[data-chatgpt-composer]):not([data-thread-user-message-navigation-content] *, :has([data-thread-user-message-navigation-content])) {
+  max-width: max(var(--thread-body-max-width), var(--awr-chat-target-width)) !important;
+}
+html[data-awr-site="chatgpt"] [data-awr-chat-pane] [data-testid^="conversation-turn-"] > div >
+  [class~="max-w-(--thread-content-max-width)"]:not([data-thread-user-message-navigation-content] *) {
+  max-width: max(var(--thread-content-max-width), var(--awr-chat-target-width)) !important;
 }
 /* Gemini legacy layout: the conversation wrapper owns the reading column. */
 html[data-awr-site="gemini"] chat-window .conversation-container {

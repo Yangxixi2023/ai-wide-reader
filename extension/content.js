@@ -14,6 +14,55 @@
     }
   }
 
+  function chatGPTLayout() {
+    const selector = 'main .thread-scroll-container';
+    const property = '--awr-chat-pane-width';
+    const marker = 'data-awr-chat-pane';
+    const panes = new Set();
+    let observing = false;
+
+    const resize = new ResizeObserver(entries => {
+      for (const { target, contentRect } of entries) {
+        const width = `${contentRect.width}px`;
+        if (target.style.getPropertyValue(property) === width) continue;
+        target.style.setProperty(property, width);
+        target.setAttribute(marker, '');
+      }
+    });
+    function observe(pane) {
+      if (panes.has(pane)) return;
+      panes.add(pane);
+      resize.observe(pane);
+    }
+    function forget(pane) {
+      resize.unobserve(pane);
+      panes.delete(pane);
+      pane.removeAttribute(marker);
+      pane.style.removeProperty(property);
+    }
+    const mutations = new MutationObserver(records => {
+      for (const pane of panes) if (!pane.isConnected || !pane.matches(selector)) forget(pane);
+      for (const { addedNodes } of records) for (const node of addedNodes) {
+        if (!(node instanceof Element) || !node.isConnected) continue;
+        if (node.matches(selector)) observe(node);
+        if (node.firstElementChild) node.querySelectorAll(selector).forEach(observe);
+      }
+    });
+
+    return ({ enabled, width, composer }) => {
+      applyWidth(enabled ? String(width / 100) : null, composer);
+      if (enabled === observing) return;
+      observing = enabled;
+      if (enabled) {
+        document.querySelectorAll(selector).forEach(observe);
+        mutations.observe(document.body, { childList: true, subtree: true });
+      } else {
+        mutations.disconnect();
+        for (const pane of panes) forget(pane);
+      }
+    };
+  }
+
   function geminiLayout() {
     let state, target, frame;
     function measure() {
@@ -42,8 +91,6 @@
     };
   }
 
-  const apply = site === 'chatgpt'
-    ? ({ enabled, width, composer }) => applyWidth(enabled ? `${width}%` : null, composer)
-    : geminiLayout();
+  const apply = site === 'chatgpt' ? chatGPTLayout() : geminiLayout();
   watch(site, apply).catch(error => console.error('宽屏阅读：读取设置失败，请刷新网页', error));
 })();
