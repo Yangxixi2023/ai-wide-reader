@@ -2,7 +2,7 @@
 
 让对话用上你的大屏。实时调整正文宽度，阅读长文、代码、表格和公式时少一点空白、多一点空间。
 
-**[下载最新安装包](https://github.com/Yangxixi2023/ai-wide-reader/releases/latest/download/ai-wide-reader-v1.0.1.zip)** · **[全部版本](https://github.com/Yangxixi2023/ai-wide-reader/releases)** · MIT 开源
+**[下载最新安装包](https://github.com/Yangxixi2023/ai-wide-reader/releases/latest)** · **[全部版本](https://github.com/Yangxixi2023/ai-wide-reader/releases)** · MIT 开源
 
 适用于桌面版 **Microsoft Edge / Google Chrome**。这是独立的 Manifest V3 浏览器扩展，安装无需编译、API Key、油猴或脚本猫。目前通过 GitHub 安装，尚未上架浏览器扩展商店。
 
@@ -10,7 +10,7 @@
 
 ## 安装
 
-1. [下载 ZIP](https://github.com/Yangxixi2023/ai-wide-reader/releases/latest/download/ai-wide-reader-v1.0.1.zip)，**完整解压到一个固定文件夹**，例如 `D:\Extensions\ai-wide-reader`。
+1. 打开 [最新发布](https://github.com/Yangxixi2023/ai-wide-reader/releases/latest)，下载 Assets 下的 `ai-wide-reader-v…zip` 安装包，**完整解压到一个固定文件夹**，例如 `D:\Extensions\ai-wide-reader`。
 2. 在浏览器地址栏输入扩展管理地址并回车：
    - Edge：`edge://extensions`
    - Chrome：`chrome://extensions`
@@ -36,7 +36,7 @@
 - **恢复网站原宽度**：停止应用扩展的布局样式，保留上次宽度。再次勾选“启用”即可恢复。
 - **重置设置**：只重置所选网站，恢复 85%、启用宽屏、输入框不跟随。
 
-百分比按**侧栏之外的可用对话区域**计算。展开侧栏、调整浏览器窗口或缩放页面时自动重新计算；100% 会保留少量两侧留白，避免内容贴住边缘。不同网站自身的正文内边距会使实际文字区域略小。扩展保留原网站字号、主题与代码滚动行为。
+百分比按**侧栏之外的可用对话区域**计算。展开侧栏、调整浏览器窗口或缩放页面时会重新排版。ChatGPT 沿用网站自身的内边距，Gemini 在 100% 时保留少量两侧留白。扩展保留原网站字号、主题与代码滚动行为。
 
 ## 更新与卸载
 
@@ -48,7 +48,7 @@
 
 - 只请求 `storage` 权限，用于通过 `chrome.storage.local` 保存几个显示设置。
 - 内容脚本只在 `chatgpt.com`、旧入口 `chat.openai.com` 和 `gemini.google.com` 运行。
-- 扩展只定位布局容器并测量宽度，不读取、保存或上传对话文本。
+- 扩展只调整布局容器宽度，不读取、保存或上传对话文本。
 - 无后台服务、统计、远程代码、外部字体或网络请求。不修改发送给模型的消息，也不调用任何模型 API。
 - 设置保留在当前浏览器配置中，不跨设备云同步。浏览器安装时可能显示可读取和更改这几个网站的提示，这是页面布局扩展所需的站点访问范围。
 
@@ -100,6 +100,6 @@ tests/            MV3 实际加载与渲染测试
 scripts/package.py
 ```
 
-扩展不轮询、不扫描聊天内容；`ResizeObserver` 响应区域尺寸变化，`MutationObserver` 只在测量容器被 SPA 替换时重新绑定。新增回答自动由 CSS 处理。
+ChatGPT 的宽度百分比由正文容器的父级布局直接解析。Gemini 使用 `ResizeObserver` 响应区域尺寸变化，并在测量容器被替换时重新绑定。新增回答自动由 CSS 处理。
 
 本项目与 OpenAI、Google 无隶属关系。
