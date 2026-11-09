@@ -10,11 +10,11 @@ const extension = path.resolve(__dirname, '../extension');
 const longCode = 'const result = computeAdvantage(rewards, values, nextValues, discount, lambda); '.repeat(24);
 const content = `<h2>让对话适应你的屏幕</h2><p>${'宽屏阅读为代码、公式和长文提供更多空间，拖动滑块即可实时调整。'.repeat(14)}</p><ul><li>公式、列表保留原来的排版与缩进</li><li>代码保留横向滚动</li></ul><div class="code-block"><pre>${longCode}</pre></div><div><table><tr><th>参数</th><th>解释</th></tr><tr><td>γ</td><td>环境折扣因子</td></tr><tr><td>λ</td><td>优势估计的偏差与方差权衡</td></tr></table></div>`;
 const common = `<style>*{box-sizing:border-box}body{margin:0;background:#fafafa;font:16px/1.8 system-ui;color:#22352e}aside{position:fixed;left:0;top:0;width:240px;height:100vh;background:#edf2ef;padding:28px}main{margin-left:240px;height:100vh;overflow:auto;padding-top:40px}h2{font-size:24px}p{margin-top:12px}pre{white-space:pre;overflow:auto;background:#e9eeeb;padding:20px;border-radius:14px}table{width:100%;border-collapse:collapse}td,th{text-align:left;padding:10px;border-bottom:1px solid #ccd9d2}form,input-container{display:block;margin:24px auto}input{width:100%;padding:16px;border:1px solid #ccd9d2;border-radius:18px;background:white}.code-block{min-width:0}</style>`;
-function fixture(site, legacy = false) {
+function fixture(site, { legacy = false, beforeMain = '' } = {}) {
   const body = site === 'chatgpt'
     ? `<main><div class="thread-parent" style="--thread-content-max-width:48rem"><div data-thread-user-message-navigation-content class="max-w-(--thread-body-max-width) [--thread-content-max-width:var(--thread-content-responsive-max-width,inherit)]"><div data-markdown-text-style="assistant-message">${content}</div></div><div class="max-w-(--thread-body-max-width) [--thread-content-max-width:var(--thread-content-responsive-max-width,inherit)]"><form data-chatgpt-composer><input placeholder="询问 ChatGPT"></form></div></div><style>[class*="--thread-body-max-width"]{--thread-content-responsive-max-width:48rem;--thread-body-max-width:var(--thread-content-max-width);max-width:var(--thread-body-max-width);width:100%;margin:auto;padding:0 20px}</style></main>`
     : `<main><chat-window style="display:block;width:100%"><div class="conversation-container"><user-query style="display:block;max-width:708px;margin:auto;width:100%">讲讲宽屏阅读</user-query><model-response><div class="markdown-main-panel">${content}</div></model-response><div class="response-footer">复制 · 重做</div></div><input-container><div class="input-area-container"><input placeholder="问问 Gemini"></div></input-container></chat-window><style>${legacy ? '.conversation-container{width:760px;max-width:760px;margin:auto}' : ''}.markdown-main-panel>*,.response-footer{max-width:708px;margin-left:auto;margin-right:auto}.markdown-main-panel p{max-width:708px}.input-area-container{width:100%;max-width:660px;margin:auto}</style></main>`;
-  return `<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><title>${site} 布局测试</title>${common}</head><body><aside><strong>${site === 'chatgpt' ? 'ChatGPT' : 'Gemini'}</strong><p>新对话</p><p>对话列表</p></aside>${body}</body></html>`;
+  return `<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><title>${site} 布局测试</title>${common}</head><body><aside><strong>${site === 'chatgpt' ? 'ChatGPT' : 'Gemini'}</strong><p>新对话</p><p>对话列表</p></aside>${beforeMain}${body}</body></html>`;
 }
 const width = async (page, selector) => page.locator(selector).first().evaluate(e => e.getBoundingClientRect().width);
 const within = (actual, expected) => assert.ok(Math.abs(actual - expected) < 2, `width ${actual}, expected ${expected}`);
@@ -24,10 +24,10 @@ async function set(site, patch) {
     await chrome.storage.local.set(Object.fromEntries(Object.entries(patch).map(([field, value]) => [`${site}.${field}`, value])));
   }, { site, patch });
 }
-async function open(site, legacy = false) {
+async function open(site, options) {
   const page = await context.newPage();
   const url = site === 'chatgpt' ? 'https://chatgpt.com/c/fixture' : 'https://gemini.google.com/app/fixture';
-  await page.route(url, route => route.fulfill({ contentType: 'text/html', body: fixture(site, legacy) }));
+  await page.route(url, route => route.fulfill({ contentType: 'text/html', body: fixture(site, options) }));
   await page.goto(url);
   await page.waitForFunction(() => document.documentElement.style.getPropertyValue('--awr-width'));
   await settle(page);
@@ -95,9 +95,28 @@ test('real MV3 extension: width, independent settings, composer, restore and per
   await chat.close(); await gemini.close();
 });
 
+test('ChatGPT keeps the visible thread wide beside a hidden or narrow main panel', async () => {
+  await set('chatgpt', { width: 85, enabled: true });
+  const page = await open('chatgpt', { beforeMain: '<main id="inactive-pane" hidden style="position:absolute;width:48px"></main>' });
+  const thread = '[data-thread-user-message-navigation-content]';
+  const available = '.thread-parent';
+  within(await width(page, thread), (await width(page, available)) * .85);
+
+  await page.evaluate(() => {
+    document.getElementById('inactive-pane').hidden = false;
+    const current = document.querySelector('.thread-parent').closest('main');
+    const replacement = current.cloneNode(true);
+    replacement.style.marginRight = '280px';
+    current.replaceWith(replacement);
+  });
+  await settle(page);
+  within(await width(page, thread), (await width(page, available)) * .85);
+  await page.close();
+});
+
 test('SPA replacement, streaming additions, sidebar changes and small viewports', async () => {
   await set('gemini', { width: 85, enabled: true });
-  const page = await open('gemini', true);
+  const page = await open('gemini', { legacy: true });
   within(await width(page, '.markdown-main-panel > p'), 1156);
   await page.evaluate(() => {
     const old = document.querySelector('chat-window');
