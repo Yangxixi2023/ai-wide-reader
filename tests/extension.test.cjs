@@ -17,7 +17,7 @@ function chatTranscript(legacy) {
 }
 function fixture(site, { legacy = false, beforeMain = '' } = {}) {
   const body = site === 'chatgpt'
-    ? `<main><div class="thread-parent" style="--thread-content-max-width:48rem">${chatTranscript(legacy)}<div class="max-w-(--thread-body-max-width)"><form data-chatgpt-composer><input placeholder="询问 ChatGPT"></form></div></div><style>[class~="max-w-(--thread-body-max-width)"],[class~="max-w-(--thread-content-max-width)"]{max-width:var(--thread-content-max-width);width:100%;margin:auto;padding:0 20px}</style></main>`
+    ? `<main><div class="thread-parent thread-scroll-container" style="--thread-content-max-width:48rem;--thread-body-max-width:var(--thread-content-max-width)">${chatTranscript(legacy)}<div class="max-w-(--thread-body-max-width)"><form data-chatgpt-composer><input placeholder="询问 ChatGPT"></form></div></div><style>[class~="max-w-(--thread-body-max-width)"]{max-width:var(--thread-body-max-width)}[class~="max-w-(--thread-content-max-width)"]{max-width:var(--thread-content-max-width)}[class^="max-w-(--thread-"]{width:100%;margin:auto;padding:0 20px}</style></main>`
     : `<main><chat-window style="display:block;width:100%"><div class="conversation-container"><user-query style="display:block;max-width:708px;margin:auto;width:100%">讲讲宽屏阅读</user-query><model-response><div class="markdown-main-panel">${content}</div></model-response><div class="response-footer">复制 · 重做</div></div><input-container><div class="input-area-container"><input placeholder="问问 Gemini"></div></input-container></chat-window><style>${legacy ? '.conversation-container{width:760px;max-width:760px;margin:auto}' : ''}.markdown-main-panel>*,.response-footer{max-width:708px;margin-left:auto;margin-right:auto}.markdown-main-panel p{max-width:708px}.input-area-container{width:100%;max-width:660px;margin:auto}</style></main>`;
   return `<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><title>${site} 布局测试</title>${common}</head><body><aside><strong>${site === 'chatgpt' ? 'ChatGPT' : 'Gemini'}</strong><p>新对话</p><p>对话列表</p></aside>${beforeMain}${body}</body></html>`;
 }
@@ -119,6 +119,26 @@ test('ChatGPT keeps the visible thread wide beside a hidden or narrow main panel
   await settle(page);
   within(await width(page, thread), (await width(page, available)) * .85);
   within(await width(page, `${thread} p`), (await width(page, available)) * .85 - 40);
+  await page.close();
+});
+
+test('ChatGPT does not squeeze both the message and composer in a compact pane', async () => {
+  await set('chatgpt', { enabled: true, width: 35, composer: true });
+  const page = await open('chatgpt');
+  await set('chatgpt', { enabled: false });
+  await page.waitForFunction(() => !document.documentElement.hasAttribute('data-awr-site'));
+  await page.locator('.thread-scroll-container').evaluate(pane => {
+    pane.style.inlineSize = '180px';
+    pane.style.marginInline = 'auto';
+  });
+  const columns = ['[data-markdown-text-style] p', 'form'];
+  const native = await Promise.all(columns.map(selector => width(page, selector)));
+  assert.deepEqual(native, [140, 140]);
+  await set('chatgpt', { enabled: true });
+  await page.waitForFunction(() => document.documentElement.hasAttribute('data-awr-site'));
+  await settle(page);
+  const enabled = await Promise.all(columns.map(selector => width(page, selector)));
+  assert.deepEqual(enabled, native, 'Wide Reader must preserve both native widths when there is no room to widen');
   await page.close();
 });
 
